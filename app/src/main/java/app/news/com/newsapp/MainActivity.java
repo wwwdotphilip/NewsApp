@@ -1,52 +1,62 @@
 package app.news.com.newsapp;
 
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import app.news.com.newsapp.API.Article;
+import app.news.com.newsapp.API.Category;
 import app.news.com.newsapp.API.News;
 import app.news.com.newsapp.API.Sources;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private WebView article;
+
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        article = (WebView) findViewById(R.id.wbArticle);
-        article.setWebViewClient(new WebViewClient() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-            public void onPageFinished(WebView view, String url) {
-                Log.i(TAG, "Finished loading URL: " +url);
-            }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                Log.e(TAG, "Error: " + description);
-            }
-        });
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        setupViewPager(viewPager);
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
 
         final RequestQueue queue = Volley.newRequestQueue(this);
         News.getInstance().getSources(queue, null, null);
         News.getInstance().setCallback(new News.Callback() {
             @Override
             public void onSourceResponse(Sources[] sources) {
-                Log.v(TAG, "Found "+sources.length+ " sources");
-                News.getInstance().getArticle(queue, sources[0].id, null);
+                Log.v(TAG, "Found " + sources.length + " sources");
+//                News.getInstance().getArticle(queue, sources[0].id, null);
             }
 
             @Override
             public void onArticleResponse(Article[] articles) {
-                Log.v(TAG, "Found "+articles.length + " articles");
-                article.loadUrl(articles[0].url);
+                Log.v(TAG, "Found " + articles.length + " articles");
+//                article.loadUrl(articles[0].url);
             }
 
             @Override
@@ -54,5 +64,45 @@ public class MainActivity extends AppCompatActivity {
                 Log.v(TAG, error);
             }
         });
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+
+        for (String item : Category.getAllCategories()){
+            CategoryFragment categoryFragment = CategoryFragment.NewInstance(item);
+            adapter.addFragment(categoryFragment, Category.toTitle(item));
+        }
+        viewPager.setAdapter(adapter);
+    }
+
+
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
+
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return mFragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
     }
 }

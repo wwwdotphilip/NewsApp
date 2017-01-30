@@ -10,8 +10,12 @@ public class Category{
     public static final String SPORTS = "sport";
     public static final String TECHNOLOGY = "technology";
 
-    public String toTitle(String category){
+    public static String toTitle(String category){
         String str = category.replace("-", " ");
         return str.toUpperCase();
+    }
+
+    public static String[] getAllCategories(){
+        return new String[]{BUSINESS, ENTERTAINMENT, GAMING, GENERAL, MUSIC, SCIENCE_AND_NATURE, SPORTS, TECHNOLOGY};
     }
 }
