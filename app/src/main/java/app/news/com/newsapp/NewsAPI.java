@@ -1,4 +1,4 @@
 package app.news.com.newsapp;
 
-public class NewAPI {
+public class NewsAPI {
 }
